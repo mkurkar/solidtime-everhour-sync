@@ -48,7 +48,6 @@ def run_sync() -> None:
 def main() -> None:
     """Main entry point - run once or as daemon."""
     if "--once" in sys.argv:
-        # Run a single sync and exit
         run_sync()
         return
 

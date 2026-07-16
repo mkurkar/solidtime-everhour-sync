@@ -33,9 +33,9 @@ This project lets you keep using Solidtime as your everyday time tracker while k
 │ (projects,  │ built-in│   (bridge API)   │  custom │(self-host│
 │    tasks)   │         │                  │  sync   │  ed)     │
 └─────────────┘         └──────────────────┘         └──────────┘
-        ▲                                                  │
-        │ hours visible here via Everhour ◄────────────────┘
-        │   (Phase 2: time entries → Everhour API)
+        ▲                       ▲                       ▲
+        │ hours visible here    │                       │ hours logged here
+        │   via Everhour ◄─────┴───── Phase 2 ◄─────────┘
 ```
 
 ### Phase 1 — Structure (Everhour → Solidtime)

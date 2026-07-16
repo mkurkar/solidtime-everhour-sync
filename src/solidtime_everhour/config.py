@@ -30,9 +30,9 @@ class SyncConfig:
 class Mappings:
     """Persistent mappings between Everhour and Solidtime IDs."""
 
-    projects: dict[str, str] = field(default_factory=dict)  # everhour_project_id -> solidtime_project_id
-    tasks: dict[str, str] = field(default_factory=dict)  # everhour_task_id -> solidtime_task_id
-    time_entries: dict[str, str] = field(default_factory=dict)  # solidtime_entry_id -> everhour_time_id
+    projects: dict[str, str] = field(default_factory=dict)
+    tasks: dict[str, str] = field(default_factory=dict)
+    time_entries: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -44,7 +44,6 @@ class Config:
 
     @classmethod
     def load(cls, path: str | None = None) -> "Config":
-        """Load config from JSON file."""
         if path is None:
             path = os.environ.get("CONFIG_PATH", "config.json")
 
@@ -66,7 +65,6 @@ class Config:
         )
 
     def save_mappings(self, path: str | None = None) -> None:
-        """Save current mappings back to config file."""
         if path is None:
             path = os.environ.get("CONFIG_PATH", "config.json")
 

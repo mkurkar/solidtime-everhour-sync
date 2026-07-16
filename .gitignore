@@ -39,7 +39,14 @@ config.json
 *.local.json
 data/state.json
 data/worklog_mapping.json
+data/jira_*.json
+data/solidtime_*.json
 *.log
+
+# Local-only migration scripts (not part of the public repo)
+scripts/migrate_*
+scripts/fixtures/
+scripts/scratch_*.py
 
 # Docker
 .dockerignore
