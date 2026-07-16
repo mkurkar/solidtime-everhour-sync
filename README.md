@@ -167,7 +167,34 @@ python -m solidtime_everhour --once --skip-structure
 }
 ```
 
-The CLI flag overrides `config.json` only for that one run; the config value sticks until you flip it back.
+### Scope time entries to a single project or client
+
+If you only want to push time entries for one Solidtime project (e.g. just your "eduba" tasks) or one client (e.g. the Jira-imported ones), filter by name:
+
+```bash
+# Only entries under the Solidtime project named "eduba"
+python -m solidtime_everhour --once --project eduba
+
+# Only entries under the Solidtime client named "Zeitlabs-Jira"
+python -m solidtime_everhour --once --client Zeitlabs-Jira
+
+# Combine with --skip-structure if you don't need the structure sync
+python -m solidtime_everhour --once --skip-structure --project KKUx
+```
+
+The same flags persist via `config.json`:
+
+```json
+{
+  "sync": {
+    "skip_structure": false,
+    "project": "eduba",
+    "client": null
+  }
+}
+```
+
+Filters are exact name matches against Solidtime. The script filters client-side because Solidtime's time-entries endpoint accepts but ignores the `project_id` query parameter.
 
 ### Run as a daemon
 

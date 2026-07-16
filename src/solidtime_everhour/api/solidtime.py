@@ -158,6 +158,10 @@ class SolidtimeClient:
         before: str | None = None,
         active: bool | None = None,
         limit: int | None = None,
+        offset: int | None = None,
+        project_id: str | None = None,
+        task_id: str | None = None,
+        client_id: str | None = None,
     ) -> list[dict]:
         """Get time entries, optionally filtered.
 
@@ -165,7 +169,11 @@ class SolidtimeClient:
             after: Only entries after this datetime (ISO 8601)
             before: Only entries before this datetime (ISO 8601)
             active: Filter by active/inactive status
-            limit: Max number of entries to return
+            limit: Max number of entries to return (max 500)
+            offset: Pagination offset
+            project_id: Filter to a single Solidtime project
+            task_id: Filter to a single Solidtime task
+            client_id: Filter to a single Solidtime client
         """
         params: dict[str, Any] = {}
         if after:
@@ -176,6 +184,14 @@ class SolidtimeClient:
             params["active"] = str(active).lower()
         if limit:
             params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        if project_id:
+            params["project_id"] = project_id
+        if task_id:
+            params["task_id"] = task_id
+        if client_id:
+            params["client_id"] = client_id
 
         resp = self._request("GET", self._org_url("/time-entries"), params=params)
         return resp.get("data", resp) if isinstance(resp, dict) else resp

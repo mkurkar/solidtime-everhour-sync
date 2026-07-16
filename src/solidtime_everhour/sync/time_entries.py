@@ -32,15 +32,61 @@ def _reverse_task_mapping(mappings_tasks: dict[str, str]) -> dict[str, str]:
     return {v: k for k, v in mappings_tasks.items()}
 
 
-def sync_time_entries(config: Config) -> None:
+def _resolve_project_filter(
+    solidtime: SolidtimeClient, project_name: str | None
+) -> str | None:
+    """Look up a Solidtime project by name and return its UUID, or None.
+
+    Returns None if `project_name` is falsy (no filter) or the project is
+    not found.
+    """
+    if not project_name:
+        return None
+    projects = solidtime.get_projects()
+    for p in projects:
+        if p.get("name") == project_name:
+            return p["id"]
+    logger.warning(f"Project {project_name!r} not found in Solidtime; ignoring filter")
+    return None
+
+
+def _resolve_client_filter(
+    solidtime: SolidtimeClient, client_name: str | None
+) -> str | None:
+    """Look up a Solidtime client by name and return its UUID, or None."""
+    if not client_name:
+        return None
+    clients = solidtime.get_clients()
+    for c in clients:
+        if c.get("name") == client_name:
+            return c["id"]
+    logger.warning(f"Client {client_name!r} not found in Solidtime; ignoring filter")
+    return None
+
+
+def sync_time_entries(
+    config: Config,
+    project_name: str | None = None,
+    client_name: str | None = None,
+) -> None:
     """Sync time entries from Solidtime to Everhour.
 
     Flow:
-        1. Fetch recent time entries from Solidtime
+        1. Fetch recent time entries from Solidtime (optionally scoped by
+           project or client name; both filters fall back to client-side
+           filtering because Solidtime's time-entries endpoint accepts but
+           ignores the project_id / client_id query params).
         2. For each entry, check if already synced (via mappings)
         3. If not synced, find the matching Everhour task ID
         4. Push time record to Everhour
         5. Store mapping
+
+    Args:
+        config: loaded Config
+        project_name: if set, only sync entries in this Solidtime project
+            (matched by name, e.g. "eduba").
+        client_name: if set, only sync entries in this Solidtime client
+            (matched by name, e.g. "Zeitlabs-Jira").
     """
     everhour = EverhourClient(config.everhour.api_token)
     solidtime = SolidtimeClient(
@@ -52,13 +98,66 @@ def sync_time_entries(config: Config) -> None:
     # Build reverse mapping: solidtime_task_id -> everhour_task_id
     reverse_tasks = _reverse_task_mapping(config.mappings.tasks)
 
+    # Resolve filter to a project_id/client_id
+    project_id = _resolve_project_filter(solidtime, project_name)
+    client_id = _resolve_client_filter(solidtime, client_name)
+
+    scope_msg = ""
+    if project_id:
+        scope_msg = f" scoped to project {project_name!r} ({project_id[:8]}...)"
+    elif client_id:
+        scope_msg = f" scoped to client {client_name!r} ({client_id[:8]}...)"
+
     # Step 1: Fetch recent time entries from Solidtime
     now = datetime.now(timezone.utc)
     after_date = (now - timedelta(days=config.sync.days_back)).strftime("%Y-%m-%dT00:00:00Z")
     before_date = now.strftime("%Y-%m-%dT23:59:59Z")
 
-    st_entries = solidtime.get_time_entries(after=after_date, before=before_date)
-    logger.info(f"Found {len(st_entries)} time entries in Solidtime (last {config.sync.days_back} days)")
+    # Step 1: Fetch recent time entries from Solidtime (paginated).
+    # Solidtime's API caps limit at 500; pull everything in 500-row pages.
+    all_entries: list[dict] = []
+    offset = 0
+    page_size = 500
+    while True:
+        page = solidtime.get_time_entries(
+            after=after_date, before=before_date, limit=page_size, offset=offset
+        )
+        if not page:
+            break
+        all_entries.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+
+    # Client-side filter (Solidtime API ignores project_id / client_id
+    # query params on /time-entries, so we do it ourselves).
+    if project_id or client_id:
+        before_count = len(all_entries)
+        if project_id:
+            all_entries = [
+                e for e in all_entries if e.get("project_id") == project_id
+            ]
+        elif client_id:
+            client_project_ids = {
+                p["id"]
+                for p in solidtime.get_projects()
+                if p.get("client_id") == client_id
+            }
+            all_entries = [
+                e
+                for e in all_entries
+                if e.get("project_id") in client_project_ids
+            ]
+        after_count = len(all_entries)
+        logger.info(
+            f"After filter: {after_count}/{before_count} entries match the scope"
+        )
+
+    st_entries = all_entries
+    logger.info(
+        f"Found {len(st_entries)} time entries in Solidtime "
+        f"(last {config.sync.days_back} days{scope_msg})"
+    )
 
     created = 0
     skipped = 0

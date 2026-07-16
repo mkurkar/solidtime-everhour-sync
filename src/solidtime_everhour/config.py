@@ -25,6 +25,8 @@ class SyncConfig:
     schedule_minutes: int = 15
     days_back: int = 7
     skip_structure: bool = False  # set true to only push time entries
+    project: str | None = None  # scope time entries to a Solidtime project (by name)
+    client: str | None = None   # scope time entries to a Solidtime client (by name)
 
 
 @dataclass
