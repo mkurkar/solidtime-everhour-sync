@@ -1,0 +1,11 @@
+services:
+  sync:
+    build: .
+    container_name: solidtime-everhour-sync
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./data:/app/data
+    environment:
+      - CONFIG_PATH=/app/config.json
+      - TZ=UTC

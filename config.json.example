@@ -1,0 +1,20 @@
+{
+  "solidtime": {
+    "base_url": "https://your-solidtime-instance.com",
+    "api_token": "your-solidtime-api-token",
+    "organization_id": "your-organization-uuid"
+  },
+  "everhour": {
+    "api_token": "your-everhour-api-key"
+  },
+  "sync": {
+    "client_name": "Your Company Name",
+    "schedule_minutes": 15,
+    "days_back": 7
+  },
+  "mappings": {
+    "projects": {},
+    "tasks": {},
+    "time_entries": {}
+  }
+}
