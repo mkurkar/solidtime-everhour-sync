@@ -44,9 +44,9 @@ data/solidtime_*.json
 *.log
 
 # Local-only migration scripts (not part of the public repo)
-scripts/migrate_*
-scripts/fixtures/
-scripts/scratch_*.py
+# The entire scripts/ directory is private — kept for personal use only.
+scripts/
+
 
 # Docker
 .dockerignore
