@@ -40,7 +40,7 @@ This project lets you keep using Solidtime as your everyday time tracker while k
 
 ### Phase 1 — Structure (Everhour → Solidtime)
 
-1. Ensure a single Client (`Zeitlab-Linear` by default) exists in Solidtime
+1. Ensure a single Client (configured via `sync.client_name`) exists in Solidtime
 2. Fetch every project from Everhour
 3. For each project, find-or-create a matching Solidtime project under that Client
 4. Fetch every task for the project from Everhour
@@ -102,7 +102,7 @@ A single `config.json` file controls everything:
     "api_token": "your-everhour-api-key"
   },
   "sync": {
-    "client_name": "Zeitlab-Linear",
+    "client_name": "Your Company Name",
     "schedule_minutes": 15,
     "days_back": 7
   },
