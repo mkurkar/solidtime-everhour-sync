@@ -147,6 +147,28 @@ python -m solidtime_everhour --once
 
 The first run creates all projects and tasks in Solidtime. With a few hundred Linear tasks this can take several minutes; subsequent runs are fast because they only sync what's new.
 
+### Skip structure sync (time entries only)
+
+Once your Solidtime projects/tasks are already in shape and you only want to push new time entries to Everhour/Linear, skip Phase 1 with either of these:
+
+```bash
+# Per-invocation flag
+python -m solidtime_everhour --once --skip-structure
+
+# Or set it permanently in config.json
+# (then run normally as the daemon)
+```
+
+```json
+{
+  "sync": {
+    "skip_structure": true
+  }
+}
+```
+
+The CLI flag overrides `config.json` only for that one run; the config value sticks until you flip it back.
+
 ### Run as a daemon
 
 ```bash

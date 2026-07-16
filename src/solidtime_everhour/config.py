@@ -24,6 +24,7 @@ class SyncConfig:
     client_name: str
     schedule_minutes: int = 15
     days_back: int = 7
+    skip_structure: bool = False  # set true to only push time entries
 
 
 @dataclass
